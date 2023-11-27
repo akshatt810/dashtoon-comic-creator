@@ -1,4 +1,4 @@
-import "./Strip.css";
+import "./styles/Strip.css";
 
 const Strip = ({ imgSrcs, loading, available }) => {
   const imagePanels = [
@@ -16,10 +16,10 @@ const Strip = ({ imgSrcs, loading, available }) => {
 
   return (
     <div className="strip-container">
-      {loading && <h1>Loading...</h1>}
+      {loading && <h1> Panels Loading...</h1>}
       {!loading && (
         <>
-          {available && <h1>Preview</h1>}
+          {available && <h1>Panel Preview</h1>}
           <div className="strip">
             {imagePanels.map((p) => (
               <img src={imgSrcs[p]} />

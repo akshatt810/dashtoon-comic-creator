@@ -1,10 +1,12 @@
 import { useState } from "react";
-import PanelDescriptionForm from "./components/PanelDescriptionForm";
+import PanelDescForm from "./components/PanelDescForm";
 import Strip from "./components/Strip";
-import Header from "./components/Header";
+import axios from "axios";
+import "./App.css";
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState(false);
   const [available, setAvailable] = useState(false);
   const [imgSrcs, setImgSrcs] = useState({
     panel1: "",
@@ -19,52 +21,65 @@ function App() {
     panel10: "",
   });
 
-  async function query(data) {
-    const response = await fetch(
-      "https://xdwvg9no7pefghrn.us-east-1.aws.endpoints.huggingface.cloud",
-      {
-        headers: {
-          Accept: "image/png",
-          Authorization:
-            "Bearer VknySbLLTUjbxXAXCjyfaFIPwUTCeRXbFSOjwRiCxsxFyhbnGjSFalPKrpvvDAaPVzWEevPljilLVDBiTzfIbWFdxOkYJxnOPoHhkkVGzAknaOulWggusSFewzpqsNWM",
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify(data),
-      }
-    );
-    const result = await response.blob();
-    return result;
+
+const getImages = async (e, panelDescs) => {
+  e.preventDefault();
+  setLoading(true);
+  const promises = [];
+  const newImgSrc = {};
+
+  for (let i = 1; i <= 10; i++) {
+    promises.push(axios.post('https://xdwvg9no7pefghrn.us-east-1.aws.endpoints.huggingface.cloud', {
+      inputs: panelDescs[`panel${i}`],
+    }, {
+      headers: {
+        Accept: 'image/png',
+        Authorization: 'Bearer VknySbLLTUjbxXAXCjyfaFIPwUTCeRXbFSOjwRiCxsxFyhbnGjSFalPKrpvvDAaPVzWEevPljilLVDBiTzfIbWFdxOkYJxnOPoHhkkVGzAknaOulWggusSFewzpqsNWM',
+        'Content-Type': 'application/json',
+      },
+      responseType: 'blob',
+    }));
   }
 
-  const getImages = (e, panelDescriptions) => {
-    e.preventDefault();
-    setLoading(true);
-    const promises = [];
-    const newImgSrc = {};
-    for (let i = 1; i <= 10; i++)
-      promises.push(query({ inputs: panelDescriptions[`panel${i}`] }));
-    Promise.all(promises).then((results) => {
-      results.forEach((x, idx) => {
-        const url = URL.createObjectURL(x);
-        newImgSrc[`panel${idx + 1}`] = url;
-      });
-      setImgSrcs(newImgSrc);
-      setLoading(false);
-      setAvailable(true);
+  try {
+    const results = await Promise.all(promises);
+
+    results.forEach((x, idx) => {
+      const url = URL.createObjectURL(x.data);
+      newImgSrc[`panel${idx + 1}`] = url;
     });
-  };
+
+    setImgSrcs(newImgSrc);
+    setLoading(false);
+    setAvailable(true);
+  } catch (error) {
+    console.error('Error:', error);
+    // Handle error if necessary
+    setLoading(false);
+  }
+};
 
   return (
     <div className="App">
-      <Header />
-      <PanelDescriptionForm
-        setImgSrcs={setImgSrcs}
-        getImages={getImages}
-        loading={loading}
-      />
-
-      <Strip imgSrcs={imgSrcs} loading={loading} available={available} />
+      {
+        !form ? (
+          <div className="home-container">
+            <div className="home-text"> Welcome to the world of Comic Creators!</div>
+            <div className="home-text"> Design your own custom comic panels here!</div>
+            <button className="home-btn"
+              onClick={()=> setForm(true)}>Get Started</button>
+          </div>
+      ) : (
+        <>
+          <PanelDescForm
+            setImgSrcs={setImgSrcs}
+            getImages={getImages}
+            loading={loading}
+          />
+          <Strip imgSrcs={imgSrcs} loading={loading} available={available} />
+        </>
+      )
+    }
     </div>
   );
 }

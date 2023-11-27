@@ -19,9 +19,9 @@
 
 .panel-desc-label {
   display: block;
-  font-size: 12px;
+  font-size: 18px;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .form-container {
@@ -30,12 +30,14 @@
   justify-content: center;
 }
 
-.btn {
+.btn-btn-submit {
   border: none;
   height: 35px;
-  width: 90px;
-  background-color: #fff;
+  width: 160px;
+  color: white;
+  background-color: grey;
   border-radius: 5px;
   font-weight: 700;
+  justify-content: center;
   cursor: pointer;
 }
